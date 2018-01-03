@@ -14,29 +14,40 @@ choices_cds = ColumnDataSource({'x': range(25, 125, 10),
                                 'text': range(10), 
                                 'size': [70]*10 })
 answer = None
+last_high_num = None
+last_low_num = None
 
 def generate_data():
     global circle_cds
     global equation_cds
     global answer
+    global last_high_num
+    global last_low_num
 
     high_num = randint(1, 9)
     low_num = randint(1, high_num)
-    answer = high_num - low_num
-    text = str(high_num) + ' - ' + str(low_num) + ' = '
+    if (last_high_num == high_num and last_low_num == low_num):
+        print("HERE")
+        generate_data()
+    else:
+        answer = high_num - low_num
+        text = str(high_num) + ' - ' + str(low_num) + ' = '
 
-    circle_data = {'x': range(0, high_num*10, 10),
-				   'y': [1] * high_num,
-				   'selected': [False] * high_num
-				  }
+        circle_data = {'x': range(0, high_num*10, 10),
+    				   'y': [1] * high_num,
+    				   'selected': [False] * high_num
+    				  }
 
-    equation_data = {'x': [-0.5],
-					 'y': [0],
-					 'text': [text],
-					}
+        equation_data = {'x': [-0.5],
+    					 'y': [0],
+    					 'text': [text],
+    					}
 
-    circle_cds.data = circle_data
-    equation_cds.data = equation_data
+        circle_cds.data = circle_data
+        equation_cds.data = equation_data
+
+        last_high_num = high_num
+        last_low_num = low_num
 
 generate_data()
 
@@ -52,12 +63,13 @@ circle_cds.callback = CustomJS(code="""
 choices_cds.callback = CustomJS(code="""
     var answer = {}
     var idx = cb_obj.selected['1d'].indices
-    console.log(idx)
-    console.log(answer)
     if (idx.length == 1 && idx == answer){{
         setTimeout(function () {{
             document.location.reload(true)
-        }}, 1000);
+        }}, 500);
+    }}
+    else{{
+        console.log(cb_obj.data)
     }}
     """.format(answer))
 
@@ -75,7 +87,7 @@ taptool_callback = CustomJS(args=dict(cds=circle_cds), code="""
 
 taptool = TapTool(callback=taptool_callback)
 
-p = figure(plot_width=1200, plot_height=300, x_range=(-5, 130), y_range=(0.0,1.5), tools=[taptool])
+p = figure(plot_width=1200, plot_height=600, x_range=(-5, 130), y_range=(-1.5,1.5), tools=[taptool])
 p.xaxis.visible = False
 p.xgrid.visible = False
 p.yaxis.visible = False
@@ -87,14 +99,16 @@ p.circle(x='x', y='y', source=circle_cds, size=50,
          nonselection_fill_alpha=1.0,
         )
 p.square(x='square_x', y='square_y', source=choices_cds, size='size', fill_alpha=0.25, line_color=None,
-         selection_color='#1F77B4', 
+         selection_color='#1F77B4',
          selection_line_color=None, 
          selection_fill_alpha=1.0,
          nonselection_fill_alpha=0.25,
         )
+p.circle(x=[40, 80], y=[-0.75, -0.75], size=200, line_color=['green', 'red'], line_width=5.0, fill_color=[None, None])
 
 equation = LabelSet(x='x', y='y', text='text', source=equation_cds, text_font_size='50pt')
 choices = LabelSet(x='x', y='y', text='text', source=choices_cds, text_font_size='50pt', text_color='white')
+
 
 p.add_layout(equation)
 p.add_layout(choices)
