@@ -13,6 +13,11 @@ choices_cds = ColumnDataSource({'x': range(25, 125, 10),
                                 'square_y': [0.2]*10,
                                 'text': range(10), 
                                 'size': [70]*10 })
+counts_cds = ColumnDataSource({'x': [40, 80], 
+                               'y': [-0.75, -0.75], 
+                               'color': ['green', 'red'],
+                               'text': [u'\u2714', u'\u2716']
+                               })
 answer = None
 last_high_num = None
 last_low_num = None
@@ -104,14 +109,15 @@ p.square(x='square_x', y='square_y', source=choices_cds, size='size', fill_alpha
          selection_fill_alpha=1.0,
          nonselection_fill_alpha=0.25,
         )
-p.circle(x=[40, 80], y=[-0.75, -0.75], size=200, line_color=['green', 'red'], line_width=5.0, fill_color=[None, None])
+p.circle(x='x', y='y', source=counts_cds, size=200, line_width=5.0, color='color')
 
 equation = LabelSet(x='x', y='y', text='text', source=equation_cds, text_font_size='50pt')
 choices = LabelSet(x='x', y='y', text='text', source=choices_cds, text_font_size='50pt', text_color='white')
-
+counts = LabelSet(x='x', y='y', text='text', source=counts_cds, text_font_size='50pt', text_color='white', x_offset=-25, y_offset=-35)
 
 p.add_layout(equation)
 p.add_layout(choices)
+p.add_layout(counts)
 l = layout([[p]])
 
 curdoc().add_root(l)
