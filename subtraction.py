@@ -13,27 +13,30 @@ choices_cds = ColumnDataSource({'x': range(25, 125, 10),
                                 'square_y': [0.2]*10,
                                 'text': range(10), 
                                 'size': [70]*10 })
+answer = None
 
 def generate_data():
-	global circle_cds
-	global equation_cds
+    global circle_cds
+    global equation_cds
+    global answer
 
-	high_num = randint(1, 9)
-	low_num = randint(1, high_num)
-	text = str(high_num) + ' - ' + str(low_num) + ' = '
+    high_num = randint(1, 9)
+    low_num = randint(1, high_num)
+    answer = high_num - low_num
+    text = str(high_num) + ' - ' + str(low_num) + ' = '
 
-	circle_data = {'x': range(0, high_num*10, 10),
+    circle_data = {'x': range(0, high_num*10, 10),
 				   'y': [1] * high_num,
 				   'selected': [False] * high_num
 				  }
 
-	equation_data = {'x': [-0.5],
+    equation_data = {'x': [-0.5],
 					 'y': [0],
 					 'text': [text],
 					}
 
-	circle_cds.data = circle_data
-	equation_cds.data = equation_data
+    circle_cds.data = circle_data
+    equation_cds.data = equation_data
 
 generate_data()
 
@@ -43,9 +46,20 @@ circle_cds.callback = CustomJS(code="""
         for (i=0; i< cb_obj.data['selected'].length; i++){
             cb_obj.data['selected'][i] = false        
         }
-        console.log(cb_obj.data['selected'])
     }
     """)
+
+choices_cds.callback = CustomJS(code="""
+    var answer = {}
+    var idx = cb_obj.selected['1d'].indices
+    console.log(idx)
+    console.log(answer)
+    if (idx.length == 1 && idx == answer){{
+        setTimeout(function () {{
+            document.location.reload(true)
+        }}, 1000);
+    }}
+    """.format(answer))
 
 taptool_callback = CustomJS(args=dict(cds=circle_cds), code="""
 	var selected_idx = cds.selected['1d'].indices
